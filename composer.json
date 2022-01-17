@@ -1,0 +1,46 @@
+{
+    "name": "aloware/laravel-cursor-pagination",
+    "description": "Cursor pagination for Laravel",
+    "homepage": "https://github.com/aloware/laravel-cursor-pagination",
+    "license": "MIT",
+    "keywords": ["laravel", "pagination", "aloware", "api"],
+    "authors": [
+        {
+            "name": "Hamed Kamrava",
+            "email": "h.kamrava1@gmail.com"
+        }
+    ],
+    "require": {
+      "php": ">=7.1.0",
+      "illuminate/support": "^5.5|^6|^7|^8",
+      "illuminate/http": "^5.5|^6|^7|^8",
+      "illuminate/database": "^5.5|^6|^7|^8"
+    },
+    "require-dev": {
+      "orchestra/testbench": "~3.5|~4.2",
+      "phpunit/phpunit": "~6.0|~7.0|~8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "aloware\\CursorPagination\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "aloware\\CursorPagination\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Aloware\\CursorPagination\\CursorPaginationServiceProvider"
+            ],
+            "aliases": {
+                "CursorPagination": "Aloware\\CursorPagination\\CursorPagination"
+            }
+        }
+    },
+    "scripts": {
+        "test": "phpunit --testdox"
+    }
+}
