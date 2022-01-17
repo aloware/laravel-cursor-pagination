@@ -2,7 +2,6 @@
 
 namespace Aloware\CursorPagination;
 
-use App\User;
 use ArrayAccess;
 use Countable;
 use DateTime;
@@ -164,21 +163,21 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
             $this->cursor->setDirection('prev');
             $sub_query = $query->where($this->cursor_identifier_column, $this->identifier_sort_inverted ? '>' : '<', $this->cursor->getPrevCursor())
                 ->take($limit);
+            $full_sub_query = QueryBuilderHelper::exportSqlQuery($sub_query);
             $sub_query->orderBy($this->cursor_identifier_column, $this->identifier_sort_inverted ? 'asc' : 'desc');
-            $query = DB::table( DB::raw("({$sub_query->toSql()}) as pagination") )
-                ->selectRaw('pagination.*')
-                ->mergeBindings($sub_query->getQuery());
+            $query = DB::table( DB::raw("({$full_sub_query}) as pagination") )
+                ->selectRaw('pagination.*');
         } else {
             // If Cursor Param not exist
             $query->take($limit);
         }
         $query
             ->orderBy($this->cursor_identifier_column, $this->identifier_sort_inverted ? 'desc' : 'asc');
-        if($this->cursor->getNextCursor()) {
-            $data = $query->get($this->columns);
-        } else {
+        if($this->cursor->getPrevCursor()) {
             // Converts Collection to Eloquent Collection
             $data = $model->hydrate($query->get($this->columns)->toArray());
+        } else {
+            $data = $query->get($this->columns);
         }
 
         // Check if it has more pages
