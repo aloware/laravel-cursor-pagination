@@ -119,7 +119,7 @@ Bookings::cursorPaginate(10, ['*'], 'cursor', 'id');
 
 ## Credits
 
-- [Hamed Kamrava](https://github.com)
+- [Hamed Kamrava](https://github.com/hamed-aloware)
 
 ## License
 
