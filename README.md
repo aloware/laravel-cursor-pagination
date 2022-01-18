@@ -6,7 +6,7 @@ the next and previous urls for you.
 
 ## Compatibility
 
-This package is tested on `Laravel 5.6` and we expect it to work on newer versions but never tested.
+This package is tested on `Laravel 5.6`, and we expect it to work on newer versions, but it was never tested.
 
 ## Installation
 
