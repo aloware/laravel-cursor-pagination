@@ -68,7 +68,6 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
      */
     protected $cursor = null;
 
-
     /**
      * @var string
      */
@@ -114,14 +113,13 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
         $cursor_identifier_column,
         $columns,
         $cursor_name
-    )
-    {
+    ) {
         $this->perPage = $perPage;
 
         $this->columns = $columns;
 
         $this->cursor_name = $cursor_name;
-        
+
         $this->identifier_sort_inverted = $identifier_sort_inverted;
 
         $this->cursor_identifier_column = $cursor_identifier_column;
@@ -144,9 +142,9 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
     /**
      * We put `limit` into a new variable to get one more row
      * to understand if it has more pages or not
-     * 
+     *
      * @param Model $model
-     * 
+     *
      * @return Collection|array
      */
     public function getQueryData($model)
@@ -154,18 +152,18 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
         $query = $model;
         $limit = $this->perPage + 1;
         $this->has_more_pages = false;
-        if($this->cursor->getNextCursor()) {
+        if ($this->cursor->getNextCursor()) {
             // If Cursor Points To Next
             $query->take($limit)
                 ->where($this->cursor_identifier_column, $this->identifier_sort_inverted ? '<' : '>', $this->cursor->getNextCursor());
-        } elseif($this->cursor->getPrevCursor()) {
+        } elseif ($this->cursor->getPrevCursor()) {
             // If Cursor Points To Prev
             $this->cursor->setDirection('prev');
             $sub_query = $query->where($this->cursor_identifier_column, $this->identifier_sort_inverted ? '>' : '<', $this->cursor->getPrevCursor())
                 ->take($limit);
             $full_sub_query = QueryBuilderHelper::exportSqlQuery($sub_query);
             $sub_query->orderBy($this->cursor_identifier_column, $this->identifier_sort_inverted ? 'asc' : 'desc');
-            $query = DB::table( DB::raw("({$full_sub_query}) as pagination") )
+            $query = DB::table(DB::raw("({$full_sub_query}) as pagination"))
                 ->selectRaw('pagination.*');
         } else {
             // If Cursor Param not exist
@@ -173,7 +171,7 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
         }
         $query
             ->orderBy($this->cursor_identifier_column, $this->identifier_sort_inverted ? 'desc' : 'asc');
-        if($this->cursor->getPrevCursor()) {
+        if ($this->cursor->getPrevCursor()) {
             // Converts Collection to Eloquent Collection
             $data = $model->hydrate($query->get($this->columns)->toArray());
         } else {
@@ -181,31 +179,31 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
         }
 
         // Check if it has more pages
-        if( ( $data_count = count($data) ) > $this->perPage ) {
+        if (($data_count = count($data)) > $this->perPage) {
             $this->has_more_pages = true;
-            if($this->cursor->pointsToPrev()) {
+            if ($this->cursor->pointsToPrev()) {
                 $data->forget(0);
             } else {
                 $data->forget($data_count - 1);
             }
             $data = $data->values();
         }
+
         return $data;
     }
 
     /**
      * @param Request|null $request
-     *
      */
     public function resolveCurrentCursor()
     {
         $cursor = new Cursor();
         $cursor_name = request($this->cursor_name, null);
 
-        if($cursor_name) {
+        if ($cursor_name) {
             $json = json_decode(base64_decode($cursor_name, true), true);
             $cursor_value = $json[$this->identifier];
-            if($json[$this->cursor_pointer_name]) {
+            if ($json[$this->cursor_pointer_name]) {
                 $cursor->setNextCursor($cursor_value);
             } else {
                 $cursor->setPrevCursor($cursor_value);
@@ -214,6 +212,7 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
             // If cursor param not exists so we are in the first page
             $this->setFirstPage();
         }
+
         return $cursor;
     }
 
@@ -236,8 +235,9 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
     public function nextCursor()
     {
         $this->prepareNextCursor();
-        return $this->next_cursor 
-            ? $this->encodePageUrl($this->next_cursor) 
+
+        return $this->next_cursor
+            ? $this->encodePageUrl($this->next_cursor)
             : null;
     }
 
@@ -249,8 +249,9 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
     public function nextPageUrl()
     {
         $this->prepareNextCursor();
-        return $this->next_cursor 
-            ? $this->getCursorLink($this->next_cursor) 
+
+        return $this->next_cursor
+            ? $this->getCursorLink($this->next_cursor)
             : null;
     }
 
@@ -260,8 +261,9 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
     public function prevCursor()
     {
         $this->preparePrevCursor();
-        return $this->prev_cursor 
-            ? $this->encodePageUrl($this->prev_cursor, false) 
+
+        return $this->prev_cursor
+            ? $this->encodePageUrl($this->prev_cursor, false)
             : null;
     }
 
@@ -271,8 +273,9 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
     public function prevPageUrl()
     {
         $this->preparePrevCursor();
-        return $this->prev_cursor 
-            ? $this->getCursorLink($this->prev_cursor, false) 
+
+        return $this->prev_cursor
+            ? $this->getCursorLink($this->prev_cursor, false)
             : null;
     }
 
@@ -282,11 +285,11 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
     public function preparePrevCursor()
     {
         $this->prev_cursor = $this->items->first()->{$this->getIdentifier()};
-        if($this->prev_cursor instanceof DateTime) {
+        if ($this->prev_cursor instanceof DateTime) {
             $this->prev_cursor = $this->prev_cursor->format('Y-m-d H:i:s');
         }
-        if($this->cursor->pointsToPrev()) {
-            if( ! $this->has_more_pages ) {
+        if ($this->cursor->pointsToPrev()) {
+            if (!$this->has_more_pages) {
                 $this->prev_cursor = null;
             }
         }
@@ -298,11 +301,11 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
     public function prepareNextCursor()
     {
         $this->next_cursor = $this->items->last()->{$this->getIdentifier()};
-        if($this->next_cursor instanceof DateTime) {
+        if ($this->next_cursor instanceof DateTime) {
             $this->next_cursor = $this->next_cursor->format('Y-m-d H:i:s');
         }
-        if($this->cursor->pointsToNext()) {
-            if( ! $this->has_more_pages ) {
+        if ($this->cursor->pointsToNext()) {
+            if (!$this->has_more_pages) {
                 $this->next_cursor = null;
             }
         }
@@ -345,13 +348,13 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
      */
     public function getCursorQueryNames()
     {
-        if ( ! is_null($this->cursor_queue_names)) {
+        if (!is_null($this->cursor_queue_names)) {
             $this->cursor_queue_names;
         }
 
         return [
             'prev',
-            'next'
+            'next',
         ];
     }
 
@@ -504,7 +507,7 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
 
     /**
      * Get Current Path Without Parameters
-     * 
+     *
      * @return string
      */
     protected function getCurrentUrl()
@@ -514,7 +517,7 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
 
     /**
      * Get Next Page Url
-     * 
+     *
      * @return string
      */
     protected function getNextPageUrl($cursor)
@@ -524,7 +527,7 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
 
     /**
      * Get Previous Page Url
-     * 
+     *
      * @return string
      */
     protected function getPrevPageUrl($cursor)
@@ -534,20 +537,20 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
 
     /**
      * Encodes Cursor Url
-     * 
+     *
      * @param int $cursor
-     * @param boolean $is_pointing_next
-     * 
+     * @param bool $is_pointing_next
+     *
      * @return string
      */
     protected function encodePageUrl($cursor, $is_pointing_next = true)
     {
-        if( ! $is_pointing_next && $this->isFirstPage()) {
+        if (!$is_pointing_next && $this->isFirstPage()) {
             return null;
         }
         $params = [
             $this->getIdentifier() => $cursor,
-            $this->cursor_pointer_name => $is_pointing_next
+            $this->cursor_pointer_name => $is_pointing_next,
         ];
 
         return base64_encode(json_encode($params));
@@ -555,23 +558,23 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
 
     /**
      * Get Cursor Link
-     * 
+     *
      * @param int $cursor
-     * @param boolean $is_pointing_next
-     * 
+     * @param bool $is_pointing_next
+     *
      * @return string
      */
     protected function getCursorLink($cursor, $is_pointing_next = true)
     {
-        if( ! $is_pointing_next && $this->isFirstPage()) {
+        if (!$is_pointing_next && $this->isFirstPage()) {
             return null;
         }
-        if( ! $cursor ) {
+        if (!$cursor) {
             return null;
         }
         $cursor = $this->encodePageUrl($cursor, $is_pointing_next);
         $link = $this->getCurrentUrl();
+
         return $link . '?cursor=' .  $cursor;
     }
-
 }

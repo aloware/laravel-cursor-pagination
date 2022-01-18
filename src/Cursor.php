@@ -42,7 +42,7 @@ class Cursor
 
     /**
      * @param mixed $cursor
-     * 
+     *
      * @return mixed
      */
     public function setPrevCursor($cursor)
@@ -76,7 +76,7 @@ class Cursor
 
     /**
      * @param mixed $cursor
-     * 
+     *
      * @return mixed
      */
     public function setNextCursor($cursor)
@@ -94,7 +94,7 @@ class Cursor
 
     /**
      * @param string $direction
-     * 
+     *
      * @return void
      */
     public function setDirection($direction)

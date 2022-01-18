@@ -4,6 +4,10 @@ This package provides cursor based pagination for Laravel's [Query Builder](http
 It calculates the SQL query limits automatically by checking the requests GET parameters, and automatically builds
 the next and previous urls for you.
 
+## Compatibility
+
+This package is tested on `Laravel 5.6` and we expect it to work on newer versions but never tested.
+
 ## Installation
 
 You can install this package via composer using:
@@ -21,7 +25,7 @@ So instead of saying `page=2`, you say:
 ```
 cursor=eyJpZCI6MTAsIl9wb2ludHNUb05leHRJdGVtcyI6dHJ1ZX0=
 ```
-and the cursor value is encoded(base64). If you encode this you'll we something like:
+and the cursor value is encoded(base64). If you decode it, you'll we something like:
 
 ```
 {"id":10,"_pointsToNextItems":true}

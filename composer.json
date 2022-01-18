@@ -18,7 +18,8 @@
     },
     "require-dev": {
       "orchestra/testbench": "~3.5|~4.2",
-      "phpunit/phpunit": "~6.0|~7.0|~8.0"
+      "phpunit/phpunit": "~6.0|~7.0|~8.0",
+      "aloware/shift-php-cs": "dev-master"
     },
     "autoload": {
         "psr-4": {
@@ -39,8 +40,5 @@
                 "CursorPagination": "Aloware\\CursorPagination\\CursorPagination"
             }
         }
-    },
-    "scripts": {
-        "test": "phpunit --testdox"
     }
 }
