@@ -37,16 +37,16 @@ class CursorPaginationServiceProvider extends ServiceProvider
             $identifier_sort = null;
 
             // Build the default identifier by considering column sorting and primaryKeys
-            if ( ! $cursor_column ) {
+            if (!$cursor_column) {
 
                 // Check if has explicit orderBy clause
                 if ($query_orders->isNotEmpty()) {
                     // Make the identifier the name of the first sorted column
-                    $identifier_sort = $query_orders->filter(function ($value) use($cursor_column) {
+                    $identifier_sort = $query_orders->filter(function ($value) use ($cursor_column) {
                         return $value['column'] === $cursor_column;
                     })
                     ->first();
-                    if( ! $identifier_sort) {
+                    if (!$identifier_sort) {
                         $identifier_sort = $query_orders->first();
                     }
                     $cursor_column = $identifier_sort['column'];
@@ -64,7 +64,7 @@ class CursorPaginationServiceProvider extends ServiceProvider
 
             // If there's a sorting by the identifier, check if it's desc so the cursor is inverted
             $identifier_sort_inverted = $identifier_sort ? $identifier_sort['direction'] === 'desc' : false;
-            
+
             return new CursorPaginator(
                 $this,
                 $perPage,
