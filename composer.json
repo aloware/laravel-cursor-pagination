@@ -23,12 +23,7 @@
     },
     "autoload": {
         "psr-4": {
-            "aloware\\CursorPagination\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "aloware\\CursorPagination\\Tests\\": "tests/"
+            "Aloware\\CursorPagination\\": "src/"
         }
     },
     "extra": {
