@@ -174,6 +174,7 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
         if ($this->cursor->getPrevCursor()) {
             // Converts Collection to Eloquent Collection
             $data = $model->hydrate($query->get($this->columns)->toArray());
+            $data = $this->applyModelEagerLoads($data, $model);
         } else {
             $data = $query->get($this->columns);
         }
@@ -214,6 +215,22 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
         }
 
         return $cursor;
+    }
+
+    /**
+     * Applies model eagerLoads to the new collection
+     * @param Collection $data
+     * @param Model $model
+     *
+     * @return Collection
+     */
+    public function applyModelEagerLoads($data, $model)
+    {
+        foreach ($model->getEagerLoads() as $key=>$eagerLoad) {
+            $data->load($key);
+        }
+
+        return $data;
     }
 
     /**
