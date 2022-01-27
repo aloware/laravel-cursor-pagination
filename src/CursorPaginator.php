@@ -143,23 +143,24 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
      * We put `limit` into a new variable to get one more row
      * to understand if it has more pages or not
      *
-     * @param Model $model
+     * @param Builder $builder
      *
      * @return Collection|array
      */
-    public function getQueryData($model)
+    public function getQueryData($builder)
     {
-        $query = $model;
+        $full_identifier_name = $this->getFullIdentifierName($builder);
+        $query = $builder;
         $limit = $this->perPage + 1;
         $this->has_more_pages = false;
         if ($this->cursor->getNextCursor()) {
             // If Cursor Points To Next
             $query->take($limit)
-                ->where($this->cursor_identifier_column, $this->identifier_sort_inverted ? '<' : '>', $this->cursor->getNextCursor());
+                ->where($full_identifier_name, $this->identifier_sort_inverted ? '<' : '>', $this->cursor->getNextCursor());
         } elseif ($this->cursor->getPrevCursor()) {
             // If Cursor Points To Prev
             $this->cursor->setDirection('prev');
-            $sub_query = $query->where($this->cursor_identifier_column, $this->identifier_sort_inverted ? '>' : '<', $this->cursor->getPrevCursor())
+            $sub_query = $query->where($full_identifier_name, $this->identifier_sort_inverted ? '>' : '<', $this->cursor->getPrevCursor())
                 ->take($limit);
             $full_sub_query = QueryBuilderHelper::exportSqlQuery($sub_query);
             $sub_query->orderBy($this->cursor_identifier_column, $this->identifier_sort_inverted ? 'asc' : 'desc');
@@ -173,8 +174,8 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
             ->orderBy($this->cursor_identifier_column, $this->identifier_sort_inverted ? 'desc' : 'asc');
         if ($this->cursor->getPrevCursor()) {
             // Converts Collection to Eloquent Collection
-            $data = $model->hydrate($query->get($this->columns)->toArray());
-            $data = $this->applyModelEagerLoads($data, $model);
+            $data = $builder->hydrate($query->get($this->columns)->toArray());
+            $data = $this->applyModelEagerLoads($data, $builder);
         } else {
             $data = $query->get($this->columns);
         }
@@ -215,6 +216,21 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
         }
 
         return $cursor;
+    }
+
+    /**
+     * Returns full identifier name. `table_Name`.`identifier_column`
+     * For example instead of `id` it will return `users`.`id`
+     *
+     * @param Builder $builder
+     *
+     * @return string
+     */
+    public function getFullIdentifierName($builder)
+    {
+        $table_name = $builder->getModel()->getTable();
+
+        return $table_name . '.' .$this->cursor_identifier_column;
     }
 
     /**
@@ -301,6 +317,14 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
      */
     public function preparePrevCursor()
     {
+        info('preparePrevCursor', [
+            'count' => $this->items->count(),
+        ]);
+        if (!$this->items->count()) {
+            $this->prev_cursor = null;
+
+            return;
+        }
         $this->prev_cursor = $this->items->first()->{$this->getIdentifier()};
         if ($this->prev_cursor instanceof DateTime) {
             $this->prev_cursor = $this->prev_cursor->format('Y-m-d H:i:s');
@@ -317,6 +341,14 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
      */
     public function prepareNextCursor()
     {
+        info('prepareNextCursor', [
+            'count' => $this->items->count(),
+        ]);
+        if (!$this->items->count()) {
+            $this->next_cursor = null;
+
+            return;
+        }
         $this->next_cursor = $this->items->last()->{$this->getIdentifier()};
         if ($this->next_cursor instanceof DateTime) {
             $this->next_cursor = $this->next_cursor->format('Y-m-d H:i:s');
