@@ -317,9 +317,6 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
      */
     public function preparePrevCursor()
     {
-        info('preparePrevCursor', [
-            'count' => $this->items->count(),
-        ]);
         if (!$this->items->count()) {
             $this->prev_cursor = null;
 
@@ -341,9 +338,6 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
      */
     public function prepareNextCursor()
     {
-        info('prepareNextCursor', [
-            'count' => $this->items->count(),
-        ]);
         if (!$this->items->count()) {
             $this->next_cursor = null;
 
