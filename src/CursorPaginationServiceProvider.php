@@ -27,13 +27,14 @@ class CursorPaginationServiceProvider extends ServiceProvider
          * @param int $perPage default=15
          * @param array $columns default=['*']
          * @param string $cursor_name default='cursor'
-         * @param null $cursor_column default=null
+         * @param string|null $cursor_column default=null
+         * @param string|null $cursor_value default=null
          *
          * @return CursorPaginator
          */
-        $macro = function ($perPage = 15, $columns = ['*'], $cursor_name = 'cursor', $cursor_column = null) {
+        $macro = function ($perPage = 15, $columns = ['*'], $cursor_name = 'cursor', $cursor_column = null, $cursor_value = null) {
             $query_orders = isset($this->query) ? collect($this->query->orders) : collect($this->orders);
-            $cursor_identifier_column = $cursor_column ? $cursor_column : $this->model->getKeyName();
+            $cursor_identifier_column = $cursor_column ? $cursor_column : QueryBuilderHelper::getCursorIdentifierColumn($this);
             $identifier_sort = null;
 
             // Build the default identifier by considering column sorting and primaryKeys
@@ -71,7 +72,8 @@ class CursorPaginationServiceProvider extends ServiceProvider
                 $identifier_sort_inverted,
                 $cursor_identifier_column,
                 $columns,
-                $cursor_name
+                $cursor_name,
+                $cursor_value
             );
         };
 

@@ -76,6 +76,11 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
     /**
      * @var string
      */
+    protected $cursor_value = null;
+
+    /**
+     * @var string
+     */
     protected $cursor_pointer_name = '_pointsToNextItems';
 
     /**
@@ -112,13 +117,16 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
         $identifier_sort_inverted,
         $cursor_identifier_column,
         $columns,
-        $cursor_name
+        $cursor_name,
+        $cursor_value
     ) {
         $this->perPage = $perPage;
 
         $this->columns = $columns;
 
         $this->cursor_name = $cursor_name;
+
+        $this->cursor_value = $cursor_value;
 
         $this->identifier_sort_inverted = $identifier_sort_inverted;
 
@@ -153,6 +161,7 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
         $query = $builder;
         $limit = $this->perPage + 1;
         $this->has_more_pages = false;
+
         if ($this->cursor->getNextCursor()) {
             // If Cursor Points To Next
             $query->take($limit)
@@ -200,7 +209,9 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
     public function resolveCurrentCursor()
     {
         $cursor = new Cursor();
-        $cursor_name = request($this->cursor_name, null);
+        if(!$cursor_name = $this->cursor_value) {
+            $cursor_name = request($this->cursor_name, null);
+        }
 
         if ($cursor_name) {
             $json = json_decode(base64_decode($cursor_name, true), true);
@@ -228,9 +239,7 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
      */
     public function getFullIdentifierName($builder)
     {
-        $table_name = $builder->getModel()->getTable();
-
-        return $table_name . '.' .$this->cursor_identifier_column;
+        return $this->cursor_identifier_column;
     }
 
     /**
