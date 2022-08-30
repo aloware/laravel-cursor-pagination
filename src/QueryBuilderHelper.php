@@ -18,4 +18,16 @@ class QueryBuilderHelper
 
         return $query;
     }
+
+    /**
+     * Get Cursor Identifier Column
+     *
+     * @param Builder
+     *
+     * @return string
+     */
+    public static function getCursorIdentifierColumn($builder)
+    {
+        return $builder->getModel()->getTable() . '.' . $builder->model->getKeyName();
+    }
 }
