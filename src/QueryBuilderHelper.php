@@ -44,7 +44,9 @@ class QueryBuilderHelper
      */
     public static function getTableName($builder)
     {
-        $table = explode(' ', trim($builder->from))[0];
+        $from = str_replace('`', '', $builder->from);
+
+        $table = explode(' ', trim($from))[0];
 
         return $table;
     }
