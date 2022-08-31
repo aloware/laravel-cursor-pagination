@@ -61,7 +61,11 @@ class CursorPaginationServiceProvider extends ServiceProvider
             }
 
             // Clear Default Quey Order By
-            $this->query->orders = null;
+            if($this instanceof EloquentBuilder) {
+                $this->getQuery()->orders = null;
+            } else {
+                $this->orders = null;
+            }
 
             // If there's a sorting by the identifier, check if it's desc so the cursor is inverted
             $identifier_sort_inverted = $identifier_sort ? $identifier_sort['direction'] === 'desc' : false;
