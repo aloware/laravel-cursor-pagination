@@ -33,6 +33,19 @@ class QueryBuilderHelper
         if ($builder instanceof EloquentBuilder) {
             return $builder->getModel()->getTable() . '.' . $builder->getModel()->getKeyName();
         }
-        return 'id';
+        return self::getTableName($builder) . '.id';
+    }
+
+    /**
+     * Get query builder table name
+     *
+     * @param Builder $builder
+     * @return string
+     */
+    public static function getTableName($builder)
+    {
+        $table = explode(' ', trim($builder->from))[0];
+
+        return $table;
     }
 }
