@@ -2,6 +2,8 @@
 
 namespace Aloware\CursorPagination;
 
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+
 class QueryBuilderHelper
 {
     /**
@@ -28,6 +30,9 @@ class QueryBuilderHelper
      */
     public static function getCursorIdentifierColumn($builder)
     {
-        return $builder->getModel()->getTable() . '.' . $builder->model->getKeyName();
+        if ($builder instanceof EloquentBuilder) {
+            return $builder->getModel()->getTable() . '.' . $builder->getModel()->getKeyName();
+        }
+        return 'id';
     }
 }
