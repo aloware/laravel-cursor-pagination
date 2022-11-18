@@ -8,6 +8,7 @@ use DateTime;
 use Illuminate\Contracts\Pagination\Paginator as PaginatorContract;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Support\Carbon;
@@ -164,8 +165,11 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
 
         if ($this->cursor->getNextCursor()) {
             // If Cursor Points To Next
-            $query->take($limit)
-                ->where($full_identifier_name, $this->identifier_sort_inverted ? '<' : '>', $this->cursor->getNextCursor());
+            $next_cursor = $this->cursor->getNextCursor();
+
+            $this->overrideCursorCondition($query, $full_identifier_name, $next_cursor, $this->identifier_sort_inverted);
+            $query->take($limit);
+
         } elseif ($this->cursor->getPrevCursor()) {
             // If Cursor Points To Prev
             $this->cursor->setDirection('prev');
@@ -629,4 +633,39 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
 
         return $link . '?cursor=' .  $cursor;
     }
+
+    /**
+     * Overrides Cursor Condition with the new Cursor Value
+     *
+     * @param Builder $builder
+     * @param string $full_identifier_name
+     * @param int $next_cursor_value
+     * @param bool $identifier_sort_inverted
+     *
+     * @return void
+     */
+    protected function overrideCursorCondition( $builder , string $full_identifier_name, int $next_cursor_value, bool $identifier_sort_inverted): void
+    {
+        if($builder instanceof Builder) {
+            $query = $builder->getQuery();
+        } else {
+            $query = $builder;
+        }
+
+		$bindings = $query->getBindings();
+
+        if($query->wheres[count($query->wheres)-1]['column'] == $full_identifier_name) {
+            $query->wheres[count($query->wheres)-1]['value'] = $next_cursor_value;
+            $bindings[count($bindings)-1] = $next_cursor_value;
+        } else {
+            $query->where($full_identifier_name, $identifier_sort_inverted ? '<' : '>', $next_cursor_value);
+            $bindings[] = $next_cursor_value;
+        }
+
+        $query->setBindings( $bindings );
+
+        if ($builder instanceof Builder) {
+            $builder->setQuery($query)->withoutGlobalScopes();
+        }
+	}
 }
