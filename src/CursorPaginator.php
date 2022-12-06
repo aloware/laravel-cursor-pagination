@@ -654,8 +654,11 @@ class CursorPaginator extends AbstractPaginator implements Arrayable, ArrayAcces
 
 		$bindings = $query->getBindings();
 
-        if($query->wheres[count($query->wheres)-1]['column'] == $full_identifier_name) {
-            $query->wheres[count($query->wheres)-1]['value'] = $next_cursor_value;
+        $index = count($query->wheres) - 1;
+
+        // Sanity check and make sure current where column is the same as cursor column
+        if(isset($query->wheres[$index]['column']) && $query->wheres[$index]['column'] == $full_identifier_name) {
+            $query->wheres[$index]['value'] = $next_cursor_value;
             $bindings[count($bindings)-1] = $next_cursor_value;
         } else {
             $query->where($full_identifier_name, $identifier_sort_inverted ? '<' : '>', $next_cursor_value);
